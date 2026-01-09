@@ -1768,7 +1768,7 @@ EOF
   fi
   
   sed -i 's/3000/'"${frontend_port}"'/g' server.js
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" npm run build
+  npm run build
 FRONTENDBUILD
 
     sleep 2
