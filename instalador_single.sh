@@ -1149,7 +1149,7 @@ EOF
     sudo su - root <<EOF
   apt-get remove certbot
   snap install --classic certbot
-  ln -s /snap/bin/certbot /usr/bin/certbot
+  ln -sf /snap/bin/certbot /usr/bin/certbot
 EOF
 
     sleep 2
@@ -1303,11 +1303,9 @@ cria_banco_base() {
   echo
   {
     sudo su - postgres <<EOF
-    createdb ${empresa};
-    psql
-    CREATE USER ${empresa} SUPERUSER INHERIT CREATEDB CREATEROLE;
-    ALTER USER ${empresa} PASSWORD '${senha_deploy}';
-    \q
+    createdb ${empresa} >/dev/null 2>&1 || echo "Database ${empresa} already exists"
+    psql -c "CREATE USER ${empresa} SUPERUSER INHERIT CREATEDB CREATEROLE PASSWORD '${senha_deploy}';" >/dev/null 2>&1 || echo "User ${empresa} already exists"
+    psql -c "ALTER USER ${empresa} PASSWORD '${senha_deploy}';"
     exit
 EOF
 
