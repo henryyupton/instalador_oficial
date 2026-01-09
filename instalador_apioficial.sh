@@ -288,7 +288,7 @@ DATABASE_PASSWORD=${senha_deploy}
 DATABASE_NAME=oficialseparado
 
 # Configuraciones del BotMix Backend (URL Completa con https://)
-TOKEN_ADMIN=adminpro
+TOKEN_ADMIN=adminxpert
 URL_BACKEND_MULT100=${backend_url_full}
 JWT_REFRESH_SECRET=${jwt_refresh_secret_backend}
 
@@ -299,9 +299,9 @@ PORT=${default_apioficial_port}
 URL_API_OFICIAL=${subdominio_oficial}
 
 # Configuraciones de Usuario Inicial
-NAME_ADMIN=SetupAutomatizado
-EMAIL_ADMIN=admin@multi100.com.br
-PASSWORD_ADMIN=adminpro
+NAME_ADMIN=Admin
+EMAIL_ADMIN=admin@botmix.com
+PASSWORD_ADMIN=${senha_deploy}
 EOF
 
     printf "${GREEN} >> ¡Archivo .env de la API Oficial configurado con éxito!${WHITE}\n"

@@ -226,8 +226,7 @@ instalar_whatsmeow() {
     printf "${YELLOW}   entre en contacto con el soporte:${WHITE}\n"
     echo
     printf "${BLUE}   📱 WhatsApp:${WHITE}\n"
-    printf "${WHITE}   • https://wa.me/55${WHITE}\n"
-    printf "${WHITE}   • https://wa.me/558${WHITE}\n"
+    printf "${WHITE}   • https://wa.me/${numero_suporte}${WHITE}\n"
     echo
     printf "${RED}   Instalación interrumpida.${WHITE}\n"
     printf "${RED}══════════════════════════════════════════════════════════════════${WHITE}\n"
@@ -302,9 +301,8 @@ menu() {
     echo
     printf "   [${BLUE}1${WHITE}] Instalar ${nome_titulo}\n"
     printf "   [${BLUE}2${WHITE}] Actualizar ${nome_titulo}\n"
-    printf "   [${BLUE}3${WHITE}] Instalar Transcripción de Audio Nativa\n"
-    printf "   [${BLUE}4${WHITE}] Instalar API Oficial\n"
-    printf "   [${BLUE}5${WHITE}] Actualizar API Oficial\n"
+    printf "   [${BLUE}3${WHITE}] Instalar API Oficial\n"
+    printf "   [${BLUE}4${WHITE}] Actualizar API Oficial\n"
     printf "   [${BLUE}0${WHITE}] Salir\n"
     echo
     read -p "> " option
@@ -316,12 +314,9 @@ menu() {
       atualizar_base
       ;;
     3)
-      instalar_transcricao_audio_nativa
-      ;;
-    4)
       instalar_api_oficial
       ;;
-    5)
+    4)
       atualizar_api_oficial
       ;;
     6)
@@ -747,7 +742,7 @@ config_timezone_base() {
   echo
   {
     sudo su - root <<EOF
-  timedatectl set-timezone America/Sao_Paulo
+  timedatectl set-timezone America/Lima
 EOF
     sleep 2
   } || trata_erro "config_timezone_base"
@@ -2033,13 +2028,13 @@ RESTARTPM2
 # Finaliza la instalación y muestra datos de acceso
 fim_instalacao_base() {
   banner
-  printf "   ${GREEN} >> Instalación concluida...\n"
+  printf "   ${GREEN} >> Instalación completada con éxito...\n"
   echo
-  printf "   ${WHITE}Backend: ${BLUE}${subdominio_backend}\n"
-  printf "   ${WHITE}Frontend: ${BLUE}${subdominio_frontend}\n"
+  printf "   ${WHITE}Backend:  ${BLUE}https://${subdominio_backend}\n"
+  printf "   ${WHITE}Frontend: ${BLUE}https://${subdominio_frontend}\n"
   echo
-  printf "   ${WHITE}Usuario ${BLUE}admin@botmix.com\n"
-  printf "   ${WHITE}Contraseña   ${BLUE}adminpro\n"
+  printf "   ${WHITE}Usuario:  ${BLUE}admin@botmix.com\n"
+  printf "   ${WHITE}Contraseña:    ${BLUE}${senha_master}\n"
   echo
   printf "${WHITE}>> Presione cualquier tecla para volver al menú principal o CTRL+C para finalizar este script\n"
   read -p ""
@@ -2278,7 +2273,7 @@ atualizar_api_oficial() {
   sleep 2
 }
 
-# Agregar función para migrar para Multiflow-PRO
+# Agregar función para migrar para BotMix-PRO
 migrar_multiflow_pro() {
   banner
   printf "${WHITE} >> Migrando para BotMix PRO...\n"
