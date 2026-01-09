@@ -733,8 +733,13 @@ cria_deploy_base() {
   printf "${WHITE} >> Ahora, vamos a crear el usuario para deploy...\n"
   echo
   {
-    sudo useradd -m -p $(openssl passwd -1 ${senha_deploy}) -s /bin/bash -G sudo deploy
-    sudo usermod -aG sudo deploy
+    if id "deploy" &>/dev/null; then
+        printf "${YELLOW} >> El usuario 'deploy' ya existe. Saltando creación...\n"
+    else
+        sudo useradd -m -p $(openssl passwd -1 ${senha_deploy}) -s /bin/bash -G sudo deploy
+        sudo usermod -aG sudo deploy
+        printf "${GREEN} >> Usuario 'deploy' creado con éxito.\n"
+    fi
     sleep 2
   } || trata_erro "cria_deploy_base"
 }
