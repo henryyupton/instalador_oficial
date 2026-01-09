@@ -1303,8 +1303,18 @@ cria_banco_base() {
   echo
   {
     sudo su - postgres <<EOF
-    createdb ${empresa} >/dev/null 2>&1 || echo "Database ${empresa} already exists"
-    psql -c "CREATE USER ${empresa} SUPERUSER INHERIT CREATEDB CREATEROLE PASSWORD '${senha_deploy}';" >/dev/null 2>&1 || echo "User ${empresa} already exists"
+    if ! psql -lqt | cut -d \| -f 1 | grep -qw ${empresa}; then
+        createdb ${empresa}
+    else
+        echo "Database ${empresa} already exists"
+    fi
+
+    if ! psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${empresa}'" | grep -q 1; then
+        psql -c "CREATE USER ${empresa} SUPERUSER INHERIT CREATEDB CREATEROLE PASSWORD '${senha_deploy}';"
+    else
+        echo "User ${empresa} already exists"
+    fi
+
     psql -c "ALTER USER ${empresa} PASSWORD '${senha_deploy}';"
     exit
 EOF
