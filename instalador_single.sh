@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Log de instalación automática
+LOG_FILE="botmix_install.log"
+exec > >(tee -i "$LOG_FILE") 2>&1
+
 GREEN='\033[1;32m'
 BLUE='\033[1;34m'
 WHITE='\033[1;37m'
