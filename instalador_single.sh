@@ -184,7 +184,7 @@ instalar_whatsmeow() {
   # Validar el token usando la misma lógica que actualizador_pro.sh
   INSTALADOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   TEST_DIR="${INSTALADOR_DIR}/test_clone_$(date +%s)"
-  REPO_URL="https://${TOKEN_AUTH}@github.com/scriptswhitelabel/m.git"
+  REPO_URL="https://${TOKEN_AUTH}@github.com/henryyupton/botmixxpertdevelopment.git"
 
   printf "${WHITE} >> Validando token con prueba de git clone...\n"
   echo
@@ -597,9 +597,13 @@ questoes_variaveis_base() {
   echo
   # DEFINE LINK REPO GITHUB
   banner
-  printf "${WHITE} >> Ingrese la URL del repositorio privado en GitHub: \n"
+  printf "${WHITE} >> Ingrese la URL del repositorio privado en GitHub (Enter para Default): \n"
+  printf "${WHITE} >> Default: ${GREEN}https://github.com/henryyupton/botmixxpertdevelopment.git${WHITE}\n"
   echo
   read -p "> " repo_url
+  if [ -z "$repo_url" ]; then
+    repo_url="https://github.com/henryyupton/botmixxpertdevelopment.git"
+  fi
   echo
 }
 
@@ -2002,10 +2006,13 @@ config_latencia_base() {
   printf "${WHITE} >> Reduciendo Latencia...\n"
   echo
   {
+    backend_host=$(echo "${subdominio_backend}" | sed 's|https://||')
+    frontend_host=$(echo "${subdominio_frontend}" | sed 's|https://||')
+    
     sudo su - root <<EOF
 cat >> /etc/hosts << 'END'
-127.0.0.1   ${subdominio_backend}
-127.0.0.1   ${subdominio_frontend}
+127.0.0.1   ${backend_host}
+127.0.0.1   ${frontend_host}
 END
 EOF
 
@@ -2030,8 +2037,8 @@ fim_instalacao_base() {
   banner
   printf "   ${GREEN} >> Instalación completada con éxito...\n"
   echo
-  printf "   ${WHITE}Backend:  ${BLUE}https://${subdominio_backend}\n"
-  printf "   ${WHITE}Frontend: ${BLUE}https://${subdominio_frontend}\n"
+  printf "   ${WHITE}Backend:  ${BLUE}${subdominio_backend}\n"
+  printf "   ${WHITE}Frontend: ${BLUE}${subdominio_frontend}\n"
   echo
   printf "   ${WHITE}Usuario:  ${BLUE}admin@botmix.com\n"
   printf "   ${WHITE}Contraseña:    ${BLUE}${senha_master}\n"
