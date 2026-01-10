@@ -523,19 +523,18 @@ validar_acesso_repositorio_atualizar() {
 
 selecionar_versao_atualizar() {
   banner
-  printf "${WHITE} >> Buscando Versiones Disponibles... \n"
+  printf "${WHITE} >> Consultando versiones en el repositorio... \n"
   echo
   cd /home/deploy/${empresa} >/dev/null 2>&1 || cd "${APP_DIR}" >/dev/null 2>&1
   git fetch --tags >/dev/null 2>&1
 
   banner
-  printf "${WHITE} >> Versiones Disponibles: \n"
-  echo "--------------------------"
-  git tag -l | sort -V | tail -n 10
-  echo "main (última versión)"
-  echo "--------------------------"
-  printf "${WHITE} >> Ingrese la versión que desea instalar (ej: v7.0.1) \n"
-  printf "${WHITE} >> o presione ENTER para lo más reciente (main): "
+  printf "${WHITE} >> Versiones Disponibles en GitHub: \n"
+  echo "------------------------------------------"
+  git tag -l | sort -V | tail -n 15
+  echo "main (Branch principal / última versión)"
+  echo "------------------------------------------"
+  printf "${WHITE} >> Escriba la versión a instalar y presione ENTER: "
   read action_version
 
   if [ -z "${action_version}" ]; then
