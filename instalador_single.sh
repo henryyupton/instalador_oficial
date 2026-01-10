@@ -2251,7 +2251,7 @@ STOPPM2
   echo
   sleep 2
 
-  source /home/deploy/${empresa}/frontend/.env
+  source /home/deploy/${empresa}/frontend/.env >/dev/null 2>&1
   frontend_port=${SERVER_PORT:-3000}
   sudo su - deploy <<UPDATEAPP
   # Configura PATH para Node.js e PM2
@@ -2271,18 +2271,22 @@ STOPPM2
     exit 1
   fi
   
+  printf "${WHITE} >> Forzando limpieza de archivos locales...\n"
+  cd "\$APP_DIR"
+  git reset --hard >/dev/null 2>&1
+  git clean -fd >/dev/null 2>&1
+  
   printf "${WHITE} >> Actualizando Código...\n"
   echo
-  cd "\$APP_DIR"
-  git fetch origin --tags
+  git fetch origin --tags >/dev/null 2>&1
   
   VERSION="${action_version}"
   
   if [ "\$VERSION" == "main" ]; then
-    git checkout main
+    git checkout -f main
     git reset --hard origin/main
   else
-    git checkout "\$VERSION"
+    git checkout -f "\$VERSION"
     git reset --hard "\$VERSION"
   fi
   
