@@ -512,24 +512,43 @@ selecionar_versao_atualizar() {
   cd /home/deploy/${empresa} >/dev/null 2>&1 || cd "${APP_DIR}" >/dev/null 2>&1
   git fetch --tags >/dev/null 2>&1
 
+  # Obtener tags en un array (los últimos 15)
+  mapfile -t tags < <(git tag -l | sort -V | tail -n 15)
+  local num_tags=${#tags[@]}
+
   banner
   printf "${WHITE} >> Versiones Disponibles en GitHub: \n"
   echo "------------------------------------------"
-  git tag -l | sort -V | tail -n 15
-  echo "main (Branch principal / última versión)"
+  
+  # Listar tags numerados
+  for i in $(seq 0 $((num_tags - 1))); do
+    printf "   [${BLUE}$((i + 1))${WHITE}] ${tags[$i]}\n"
+  done
+  
+  # Opción main siempre al final
+  local opt_main=$((num_tags + 1))
+  printf "   [${BLUE}${opt_main}${WHITE}] main (Branch principal / última versión)\n"
   echo "------------------------------------------"
-  printf "${WHITE} >> Escriba la versión a instalar y presione ENTER: "
-  read action_version
+  printf "${WHITE} >> Seleccione el NÚMERO de la versión a instalar (ENTER para main): "
+  read selection
 
-  if [ -z "${action_version}" ]; then
+  if [ -z "${selection}" ] || [ "${selection}" -eq "${opt_main}" ]; then
+    action_version="main"
+  elif [[ "${selection}" =~ ^[0-9]+$ ]] && [ "${selection}" -ge 1 ] && [ "${selection}" -le "${num_tags}" ]; then
+    action_version="${tags[$((selection - 1))]}"
+  else
+    printf "${RED} >> Opción inválida. Usando 'main' por defecto.${WHITE}\n"
+    sleep 2
     action_version="main"
   fi
+  
   export action_version
 }
 
 sair() {
   exit 0
 }
+
 
 ################################################################
 #                         INSTALAÇÃO                           #
@@ -2144,7 +2163,7 @@ fim_instalacao_base() {
 
 backup_app_atualizar() {
   carregar_variaveis
-  [ -f "/home/deploy/${empresa}/backend/.env" ] && source /home/deploy/${empresa}/backend/.env
+  [ -f "/home/deploy/${empresa}/backend/.env" ] && source /home/deploy/${empresa}/backend/.env >/dev/null 2>&1
   
   {
     banner
