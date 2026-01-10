@@ -458,36 +458,21 @@ atualizar_base() {
 
 validar_acesso_repositorio_atualizar() {
   banner
-  printf "${WHITE} >> Validando Acceso al Repositorio... \n"
+  printf "${WHITE} >> Configuración de Acceso a GitHub \n"
   echo
   
-  # Cargar variables actuales
-  carregar_variaveis
-  
-  local current_token="${github_token}"
-  local current_repo="${repo_url}"
-  
-  if [ -z "$current_repo" ]; then
-    current_repo="https://github.com/henryyupton/botmixxpertdevelopment.git"
-  fi
+  # Cargar variables actuales para tener el default del repo
+  carregar_variaveis >/dev/null 2>&1
+  local repo_default="${repo_url:-"https://github.com/henryyupton/botmixxpertdevelopment.git"}"
 
-  printf "${WHITE} >> Token Actual: ${YELLOW}${current_token:-"(No definido)"}${WHITE}\n"
-  printf "${WHITE} >> Repositorio Actual: ${YELLOW}${current_repo}${WHITE}\n"
+  printf "${WHITE} >> Ingrese su TOKEN de acceso personal de GitHub: \n"
+  read -p "> " github_token
   echo
-  printf "${WHITE} >> ¿Desea usar las credenciales actuales? (S/N): "
-  read -p "> " usar_actuales
-  usar_actuales=$(echo "${usar_actuales}" | tr '[:lower:]' '[:upper:]')
-
-  if [ "${usar_actuales}" != "S" ]; then
-    banner
-    printf "${WHITE} >> Ingrese su TOKEN de acceso personal de GitHub: \n"
-    read -p "> " github_token
-    banner
-    printf "${WHITE} >> Ingrese la URL del repositorio privado (ENTER para Default): \n"
-    printf "${WHITE} >> Default: ${GREEN}${current_repo}${WHITE}\n"
-    read -p "> " repo_url
-    [ -z "$repo_url" ] && repo_url="${current_repo}"
-  fi
+  printf "${WHITE} >> Ingrese la URL del repositorio privado (Presione ENTER para el valor por defecto): \n"
+  printf "${WHITE} >> Default: ${GREEN}${repo_default}${WHITE}\n"
+  read -p "> " repo_input
+  
+  repo_url="${repo_input:-$repo_default}"
 
   # Validar Acceso
   banner
