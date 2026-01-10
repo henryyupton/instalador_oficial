@@ -51,22 +51,21 @@ trata_erro() {
 
 # Salvar variáveis
 salvar_variaveis() {
-  echo "subdominio_backend=${subdominio_backend}" >$ARQUIVO_VARIAVEIS
-  echo "subdominio_frontend=${subdominio_frontend}" >>$ARQUIVO_VARIAVEIS
-  echo "email_deploy=${email_deploy}" >>$ARQUIVO_VARIAVEIS
-  echo "empresa=${empresa}" >>$ARQUIVO_VARIAVEIS
-  echo "senha_deploy=${senha_deploy}" >>$ARQUIVO_VARIAVEIS
-  # echo "subdominio_perfex=${subdominio_perfex}" >>$ARQUIVO_VARIAVEIS
-  echo "senha_master=${senha_master}" >>$ARQUIVO_VARIAVEIS
-  echo "nome_titulo=${nome_titulo}" >>$ARQUIVO_VARIAVEIS
-  echo "numero_suporte=${numero_suporte}" >>$ARQUIVO_VARIAVEIS
-  echo "facebook_app_id=${facebook_app_id}" >>$ARQUIVO_VARIAVEIS
-  echo "facebook_app_secret=${facebook_app_secret}" >>$ARQUIVO_VARIAVEIS
-  echo "github_token=${github_token}" >>$ARQUIVO_VARIAVEIS
-  echo "repo_url=${repo_url}" >>$ARQUIVO_VARIAVEIS
-  echo "proxy=${proxy}" >>$ARQUIVO_VARIAVEIS
-  echo "backend_port=${backend_port}" >>$ARQUIVO_VARIAVEIS
-  echo "frontend_port=${frontend_port}" >>$ARQUIVO_VARIAVEIS
+  echo "subdominio_backend=\"${subdominio_backend}\"" >$ARQUIVO_VARIAVEIS
+  echo "subdominio_frontend=\"${subdominio_frontend}\"" >>$ARQUIVO_VARIAVEIS
+  echo "email_deploy=\"${email_deploy}\"" >>$ARQUIVO_VARIAVEIS
+  echo "empresa=\"${empresa}\"" >>$ARQUIVO_VARIAVEIS
+  echo "senha_deploy=\"${senha_deploy}\"" >>$ARQUIVO_VARIAVEIS
+  echo "senha_master=\"${senha_master}\"" >>$ARQUIVO_VARIAVEIS
+  echo "nome_titulo=\"${nome_titulo}\"" >>$ARQUIVO_VARIAVEIS
+  echo "numero_suporte=\"${numero_suporte}\"" >>$ARQUIVO_VARIAVEIS
+  echo "facebook_app_id=\"${facebook_app_id}\"" >>$ARQUIVO_VARIAVEIS
+  echo "facebook_app_secret=\"${facebook_app_secret}\"" >>$ARQUIVO_VARIAVEIS
+  echo "github_token=\"${github_token}\"" >>$ARQUIVO_VARIAVEIS
+  echo "repo_url=\"${repo_url}\"" >>$ARQUIVO_VARIAVEIS
+  echo "proxy=\"${proxy}\"" >>$ARQUIVO_VARIAVEIS
+  echo "backend_port=\"${backend_port}\"" >>$ARQUIVO_VARIAVEIS
+  echo "frontend_port=\"${frontend_port}\"" >>$ARQUIVO_VARIAVEIS
 }
 
 # Carregar variáveis
@@ -500,9 +499,9 @@ validar_acesso_repositorio_atualizar() {
   
   if git ls-remote "${test_url}" HEAD >/dev/null 2>&1; then
     printf "${GREEN} >> ¡Acceso validado con éxito!${WHITE}\n"
-    # Guardar variables permanentemente
-    sed -i "s|^github_token=.*|github_token=${github_token}|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "github_token=${github_token}" >> "$ARQUIVO_VARIAVEIS"
-    sed -i "s|^repo_url=.*|repo_url=${repo_url}|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "repo_url=${repo_url}" >> "$ARQUIVO_VARIAVEIS"
+    # Guardar variables permanentemente con comillas
+    sed -i "s|^github_token=.*|github_token=\"${github_token}\"|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "github_token=\"${github_token}\"" >> "$ARQUIVO_VARIAVEIS"
+    sed -i "s|^repo_url=.*|repo_url=\"${repo_url}\"|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "repo_url=\"${repo_url}\"" >> "$ARQUIVO_VARIAVEIS"
     
     # Actualizar git config local
     cd /home/deploy/${empresa} >/dev/null 2>&1 || true
