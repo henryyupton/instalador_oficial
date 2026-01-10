@@ -304,7 +304,7 @@ menu() {
     printf "${WHITE} Seleccione abajo la opción deseada: \n"
     echo
     printf "   [${BLUE}1${WHITE}] Instalar ${nome_titulo}\n"
-    printf "   [${BLUE}2${WHITE}] Actualizar ${nome_titulo}\n"
+    printf "   [${BLUE}2${WHITE}] Actualizaciones / Actualizar ${nome_titulo}\n"
     printf "   [${BLUE}3${WHITE}] Instalar API Oficial\n"
     printf "   [${BLUE}4${WHITE}] Actualizar API Oficial\n"
     printf "   [${BLUE}0${WHITE}] Salir\n"
@@ -447,11 +447,101 @@ instalacao_base() {
 }
 
 # Etapa de instalação
+# Etapa de instalação
 atualizar_base() {
+  validar_acesso_repositorio_atualizar || return 1
+  selecionar_versao_atualizar
   backup_app_atualizar || trata_erro "backup_app_atualizar"
   instala_ffmpeg_base || trata_erro "instala_ffmpeg_base"
   config_cron_base || trata_erro "config_cron_base"
   baixa_codigo_atualizar || trata_erro "baixa_codigo_atualizar"
+}
+
+validar_acesso_repositorio_atualizar() {
+  banner
+  printf "${WHITE} >> Validando Acceso al Repositorio... \n"
+  echo
+  
+  # Cargar variables actuales
+  carregar_variaveis
+  
+  local current_token="${github_token}"
+  local current_repo="${repo_url}"
+  
+  if [ -z "$current_repo" ]; then
+    current_repo="https://github.com/henryyupton/botmixxpertdevelopment.git"
+  fi
+
+  printf "${WHITE} >> Token Actual: ${YELLOW}${current_token:-"(No definido)"}${WHITE}\n"
+  printf "${WHITE} >> Repositorio Actual: ${YELLOW}${current_repo}${WHITE}\n"
+  echo
+  printf "${WHITE} >> ¿Desea usar las credenciales actuales? (S/N): "
+  read -p "> " usar_actuales
+  usar_actuales=$(echo "${usar_actuales}" | tr '[:lower:]' '[:upper:]')
+
+  if [ "${usar_actuales}" != "S" ]; then
+    banner
+    printf "${WHITE} >> Ingrese su TOKEN de acceso personal de GitHub: \n"
+    read -p "> " github_token
+    banner
+    printf "${WHITE} >> Ingrese la URL del repositorio privado (ENTER para Default): \n"
+    printf "${WHITE} >> Default: ${GREEN}${current_repo}${WHITE}\n"
+    read -p "> " repo_url
+    [ -z "$repo_url" ] && repo_url="${current_repo}"
+  fi
+
+  # Validar Acceso
+  banner
+  printf "${WHITE} >> Probando conexión con GitHub... \n"
+  echo
+  
+  github_token_encoded=$(codifica_clone_base "${github_token}")
+  test_url=$(echo ${repo_url} | sed "s|https://|https://${github_token_encoded}@|")
+  
+  if git ls-remote "${test_url}" HEAD >/dev/null 2>&1; then
+    printf "${GREEN} >> ¡Acceso validado con éxito!${WHITE}\n"
+    # Guardar variables permanentemente
+    sed -i "s|^github_token=.*|github_token=${github_token}|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "github_token=${github_token}" >> "$ARQUIVO_VARIAVEIS"
+    sed -i "s|^repo_url=.*|repo_url=${repo_url}|g" "$ARQUIVO_VARIAVEIS" 2>/dev/null || echo "repo_url=${repo_url}" >> "$ARQUIVO_VARIAVEIS"
+    
+    # Actualizar git config local
+    cd /home/deploy/${empresa} >/dev/null 2>&1 || true
+    if [ -d ".git" ]; then
+      git remote set-url origin "${test_url}"
+    fi
+    sleep 2
+    return 0
+  else
+    printf "${RED} >> ERROR: No se pudo acceder al repositorio. Verifique el Token y la URL.${WHITE}\n"
+    printf "${RED} >> Asegúrese de que el Token tenga permisos de 'repo'.${WHITE}\n"
+    echo
+    printf "${WHITE} >> Presione cualquier tecla para volver al menú...${WHITE}"
+    read -n 1 -s
+    return 1
+  fi
+}
+
+selecionar_versao_atualizar() {
+  banner
+  printf "${WHITE} >> Buscando Versiones Disponibles... \n"
+  echo
+  cd /home/deploy/${empresa} >/dev/null 2>&1 || cd "${APP_DIR}" >/dev/null 2>&1
+  git fetch --tags >/dev/null 2>&1
+
+  banner
+  printf "${WHITE} >> Versiones Disponibles: \n"
+  echo "--------------------------"
+  git tag -l | sort -V | tail -n 10
+  echo "main (última versión)"
+  echo "--------------------------"
+  printf "${WHITE} >> Ingrese la versión que desea instalar (ej: v7.0.1) \n"
+  printf "${WHITE} >> o presione ENTER para lo más reciente (main): "
+  read action_version
+
+  if [ -z "${action_version}" ]; then
+    action_version="main"
+  fi
+  export action_version
 }
 
 sair() {
@@ -2105,6 +2195,10 @@ baixa_codigo_atualizar() {
 
   sleep 2
 
+  if [ -z "${action_version}" ]; then
+    action_version="main"
+  fi
+
   banner
   printf "${WHITE} >> Parando Instancias... \n"
   echo
@@ -2148,12 +2242,20 @@ STOPPM2
     exit 1
   fi
   
-  printf "${WHITE} >> Actualizando Backend...\n"
+  printf "${WHITE} >> Actualizando Código...\n"
   echo
   cd "\$APP_DIR"
-  git fetch origin
-  git checkout main
-  git reset --hard origin/main
+  git fetch origin --tags
+  
+  VERSION="${action_version}"
+  
+  if [ "\$VERSION" == "main" ]; then
+    git checkout main
+    git reset --hard origin/main
+  else
+    git checkout "\$VERSION"
+    git reset --hard "\$VERSION"
+  fi
   
   if [ ! -d "\$BACKEND_DIR" ]; then
     echo "ERROR: Directorio del backend no existe: \$BACKEND_DIR"
@@ -2204,7 +2306,7 @@ STOPPM2
     sed -i 's/3000/'"$frontend_port"'/g' server.js
   fi
   
-  NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" npm run build
+  npm run build
   sleep 2
   pm2 flush
   pm2 reset all
