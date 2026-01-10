@@ -2278,7 +2278,7 @@ STOPPM2
   
   printf "${WHITE} >> Actualizando Código...\n"
   echo
-  git fetch origin --tags >/dev/null 2>&1
+  git fetch origin --tags -f >/dev/null 2>&1
   
   VERSION="${action_version}"
   
