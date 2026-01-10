@@ -2161,24 +2161,51 @@ fim_instalacao_base() {
 
 backup_app_atualizar() {
   carregar_variaveis
-  source /home/deploy/${empresa}/backend/.env
+  [ -f "/home/deploy/${empresa}/backend/.env" ] && source /home/deploy/${empresa}/backend/.env
+  
   {
     banner
-    printf "${WHITE} >> ¿Antes de actualizar desea hacer una copia de seguridad de la base de datos? ${GREEN}S/${RED}N:${WHITE}\n"
+    printf "${WHITE} >> REFUERZO DE SEGURIDAD ANTES DE ACTUALIZAR \n"
+    printf "${WHITE} ------------------------------------------ \n"
+    printf "${WHITE} >> 1. ¿Desea hacer backup de la BASE DE DATOS? ${GREEN}S/${RED}N:${WHITE} "
+    read -p "> " confirmacao_db
+    confirmacao_db=$(echo "${confirmacao_db}" | tr '[:lower:]' '[:upper:]')
+    
+    printf "${WHITE} >> 2. ¿Desea hacer backup de todos los ARCHIVOS Y CONFIGURACIÓN? ${GREEN}S/${RED}N:${WHITE} "
+    read -p "> " confirmacao_files
+    confirmacao_files=$(echo "${confirmacao_files}" | tr '[:lower:]' '[:upper:]')
     echo
-    read -p "> " confirmacao_backup
-    echo
-    confirmacao_backup=$(echo "${confirmacao_backup}" | tr '[:lower:]' '[:upper:]')
-    if [ "${confirmacao_backup}" == "S" ]; then
+
+    [ ! -d "/home/deploy/backups" ] && mkdir -p "/home/deploy/backups"
+    local timestamp=$(date +%d-%m-%Y_%Hh%M)
+
+    # Backup de Base de Datos
+    if [ "${confirmacao_db}" == "S" ]; then
+      printf "${YELLOW} >> Realizando backup de la base de datos...${WHITE}\n"
       db_password=$(grep "DB_PASS=" /home/deploy/${empresa}/backend/.env | cut -d '=' -f2)
-      [ ! -d "/home/deploy/backups" ] && mkdir -p "/home/deploy/backups"
-      backup_file="/home/deploy/backups/${empresa}_$(date +%d-%m-%Y_%Hh).sql"
-      PGPASSWORD="${db_password}" pg_dump -U ${empresa} -h localhost ${empresa} >"${backup_file}"
-      printf "${GREEN} >> Backup de la base de datos ${empresa} concluido. Archivo de backup: ${backup_file}\n"
-      sleep 2
-    else
-      printf " >> Continuando la actualización...\n"
-      echo
+      local backup_db="/home/deploy/backups/${empresa}_db_${timestamp}.sql"
+      PGPASSWORD="${db_password}" pg_dump -U ${empresa} -h localhost ${empresa} >"${backup_db}"
+      if [ $? -eq 0 ]; then
+        printf "${GREEN} >> Backup DB completado: ${backup_db}${WHITE}\n"
+      else
+        printf "${RED} >> ERROR al realizar backup de la base de datos.${WHITE}\n"
+      fi
+    fi
+
+    # Backup de Archivos
+    if [ "${confirmacao_files}" == "S" ]; then
+      printf "${YELLOW} >> Realizando backup de archivos (esto puede tardar unos minutos)...${WHITE}\n"
+      local backup_tar="/home/deploy/backups/${empresa}_files_${timestamp}.tar.gz"
+      tar -czf "${backup_tar}" -C /home/deploy "${empresa}" --exclude="node_modules" --exclude="dist" --exclude="*.zip" --exclude="*.log"
+      if [ $? -eq 0 ]; then
+        printf "${GREEN} >> Backup Archivos completado: ${backup_tar}${WHITE}\n"
+      else
+        printf "${RED} >> ERROR al realizar backup de archivos.${WHITE}\n"
+      fi
+    fi
+
+    if [ "${confirmacao_db}" != "S" ] && [ "${confirmacao_files}" != "S" ]; then
+      printf "${YELLOW} >> Saltando procesos de backup. Continuando actualización...${WHITE}\n"
     fi
 
     sleep 2
