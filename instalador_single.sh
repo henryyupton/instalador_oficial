@@ -303,7 +303,7 @@ menu() {
     printf "${WHITE} Seleccione abajo la opción deseada: \n"
     echo
     printf "   [${BLUE}1${WHITE}] Instalar ${nome_titulo}\n"
-    printf "   [${BLUE}2${WHITE}] Actualizaciones / Actualizar ${nome_titulo}\n"
+    printf "   [${BLUE}2${WHITE}] Actualizaciones / Actualizar\n"
     printf "   [${BLUE}3${WHITE}] Instalar API Oficial\n"
     printf "   [${BLUE}4${WHITE}] Actualizar API Oficial\n"
     printf "   [${BLUE}0${WHITE}] Salir\n"
