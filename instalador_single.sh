@@ -2198,7 +2198,7 @@ backup_app_atualizar() {
     if [ "${confirmacao_files}" == "S" ]; then
       printf "${YELLOW} >> Realizando backup de archivos (esto puede tardar unos minutos)...${WHITE}\n"
       local backup_tar="/home/deploy/backups/${empresa}_files_${timestamp}.tar.gz"
-      tar -czf "${backup_tar}" -C /home/deploy "${empresa}" --exclude="node_modules" --exclude="dist" --exclude="*.zip" --exclude="*.log"
+      tar -czf "${backup_tar}" --exclude="node_modules" --exclude="dist" --exclude="*.zip" --exclude="*.log" -C /home/deploy "${empresa}"
       if [ $? -eq 0 ]; then
         printf "${GREEN} >> Backup Archivos completado: ${backup_tar}${WHITE}\n"
       else
