@@ -931,46 +931,20 @@ instala_ffmpeg_base() {
 
     sleep 2
 
-    {
-      sudo apt install ffmpeg -y
-      # Búsqueda dinámica de la última build de FFmpeg desde BtbN/FFmpeg-Builds
-      download_ok=false
-      asset_url=""
-      if [ "${ARCH}" = "x86_64" ]; then
-        asset_url=$(curl -sL https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest | grep -oP '"browser_download_url":\s*"\K[^"]+' | grep -E 'linux64-gpl.*\.tar\.xz$' | head -n1)
-      elif [ "${ARCH}" = "aarch64" ]; then
-        asset_url=$(curl -sL https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest | grep -oP '"browser_download_url":\s*"\K[^"]+' | grep -E 'linuxarm64-gpl.*\.tar\.xz$' | head -n1)
-      else
-        echo "Arquitectura no soportada: ${ARCH}"
-      fi
+      # [ANTIGRAVITY] FIX: Usar sempre versão do repositório oficial para garantir compatibilidade de bibliotecas
+      # A versão baixada anteriormente causava erro de libavdevice.so.62 no VPS
+      sudo apt-get remove --purge ffmpeg -y >/dev/null 2>&1
+      sudo apt-get autoremove -y >/dev/null 2>&1
+      sudo apt-get install ffmpeg -y
 
-      if [ -n "${asset_url}" ]; then
-        FFMPEG_FILE="${asset_url##*/}"
-        wget -q "${asset_url}" -O "${FFMPEG_FILE}"
-        if [ $? -eq 0 ]; then
-          mkdir -p ${FFMPEG_DIR}
-          tar -xvf ${FFMPEG_FILE} -C ${FFMPEG_DIR} >/dev/null 2>&1
-          extracted_dir=$(tar -tf ${FFMPEG_FILE} | head -1 | cut -d/ -f1)
-          if [ -n "${extracted_dir}" ] && [ -d "${FFMPEG_DIR}/${extracted_dir}/bin" ]; then
-            sudo cp ${FFMPEG_DIR}/${extracted_dir}/bin/ffmpeg /usr/bin/ >/dev/null 2>&1
-            sudo cp ${FFMPEG_DIR}/${extracted_dir}/bin/ffprobe /usr/bin/ >/dev/null 2>&1
-            sudo cp ${FFMPEG_DIR}/${extracted_dir}/bin/ffplay /usr/bin/ >/dev/null 2>&1
-            rm -rf ${FFMPEG_DIR} >/dev/null 2>&1
-            rm -f ${FFMPEG_FILE} >/dev/null 2>&1
-            download_ok=true
-          fi
-        fi
-      fi
-
-      if [ "${download_ok}" != true ]; then
-        printf "${YELLOW} >> No fue posible descargar FFmpeg de las builds oficiales. Usando paquete de la distribución...${WHITE}\n"
-      fi
-
-      export PATH=/usr/bin:${PATH}
-      echo 'export PATH=/usr/bin:${PATH}' >>~/.bashrc
-      source ~/.bashrc >/dev/null 2>&1
       if command -v ffmpeg >/dev/null 2>&1; then
-        touch "${FFMPEG}"
+          printf "${GREEN} >> FFmpeg instalado con éxito desde repositorios oficiales.${WHITE}\n"
+          ffmpeg -version | head -n 1
+      else
+          printf "${RED} >> Error instalando FFmpeg. Intentando fallback...${WHITE}\n"
+          # Fallback simples se apt falhar (raro)
+          sudo apt-get update
+          sudo apt-get install ffmpeg -y
       fi
     } || trata_erro "instala_ffmpeg_base"
   fi
@@ -2245,6 +2219,9 @@ STOPPM2
   sleep 2
 
   otimiza_banco_atualizar
+
+  # [ANTIGRAVITY] FIX: Verificar siempre dependencias del sistema al actualizar
+  instala_ffmpeg_base
 
   banner
   printf "${WHITE} >> Actualizando la Aplicación... \n"
