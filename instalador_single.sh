@@ -928,7 +928,7 @@ instala_ffmpeg_base() {
     printf " >> FFMPEG ya fue instalado. Continuando la instalación...\n"
     echo
   else
-
+  {
     sleep 2
 
       # [ANTIGRAVITY] FIX: Usar sempre versão do repositório oficial para garantir compatibilidade de bibliotecas
