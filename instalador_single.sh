@@ -509,11 +509,30 @@ selecionar_versao_atualizar() {
   banner
   printf "${WHITE} >> Consultando versiones en el repositorio... \n"
   echo
-  cd /home/deploy/${empresa} >/dev/null 2>&1 || cd "${APP_DIR}" >/dev/null 2>&1
-  git fetch --tags >/dev/null 2>&1
 
-  # Obtener tags en un array (los últimos 15)
-  mapfile -t tags < <(git tag -l | sort -V | tail -n 15)
+  # Asegurar que las variables estén cargadas
+  carregar_variaveis >/dev/null 2>&1
+
+  # Definir repo_url si está vacío
+  if [ -z "$repo_url" ]; then
+    repo_url="https://github.com/henryyupton/botmixxpertdevelopment.git"
+  fi
+
+  # Construir URL autenticada para ls-remote
+  github_token_encoded=$(codifica_clone_base "${github_token}")
+  auth_url=$(echo ${repo_url} | sed "s|https://|https://${github_token_encoded}@|")
+
+  # Obtener tags directamente del remoto usando ls-remote
+  # Filtramos por refs/tags/, extraemos el nombre del tag y ordenamos
+  if mapfile -t tags < <(git ls-remote --tags --refs --sort='v:refname' "${auth_url}" | awk -F/ '{print $3}' | sort -V | tail -n 15); then
+    : # Éxito al obtener tags
+  else
+    printf "${RED} >> Error al consultar versiones remotas.${WHITE}\n"
+    printf "${YELLOW} >> Verifique su token y conexión a internet.${WHITE}\n"
+    sleep 3
+    tags=()
+  fi
+
   local num_tags=${#tags[@]}
 
   banner
@@ -521,9 +540,13 @@ selecionar_versao_atualizar() {
   echo "------------------------------------------"
   
   # Listar tags numerados
-  for i in $(seq 0 $((num_tags - 1))); do
-    printf "   [${BLUE}$((i + 1))${WHITE}] ${tags[$i]}\n"
-  done
+  if [ ${num_tags} -eq 0 ]; then
+     printf "   ${YELLOW}No se encontraron versiones (tags).${WHITE}\n"
+  else
+    for i in $(seq 0 $((num_tags - 1))); do
+      printf "   [${BLUE}$((i + 1))${WHITE}] ${tags[$i]}\n"
+    done
+  fi
   
   # Opción main siempre al final
   local opt_main=$((num_tags + 1))
