@@ -2316,6 +2316,9 @@ STOPPM2
   sleep 2
   npx sequelize db:migrate
   sleep 2
+  printf "${WHITE} >> Sincronizando Planes (Seeds)...\n"
+  npx sequelize db:seed:all
+  sleep 2
   printf "${WHITE} >> Actualizando Frontend...\n"
   echo
   sleep 2
